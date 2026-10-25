@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Print the package dirs (top-level dirs holding a PKGBUILD) changed between two
+# revisions, one per line. With no base, or an all-zero base (first push of a
+# branch), print every package.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+base=${1:-}
+head=${2:-HEAD}
+
+if [[ -z $base || $base =~ ^0+$ ]]; then
+  dirs=$(printf "%s\n" */)
+else
+  dirs=$(git diff --name-only "$base" "$head" | cut -d/ -f1 -s)
+fi
+
+for d in $dirs; do
+  d=${d%/}
+  [[ -f $d/PKGBUILD ]] && echo "$d"
+done | sort -u

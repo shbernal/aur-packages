@@ -1,0 +1,5 @@
+# namcap rules skipped per package, for errors that are expected for that package.
+# <package> <rule>[,<rule>...]
+
+# Electron app shipped as-is under /opt
+shift-editor-bin elfpaths

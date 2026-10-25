@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# Build and lint one package in an Arch Linux container, as root:
+#   docker run --rm -v "$PWD:/repo:ro" -w /repo archlinux:base-devel scripts/check-package <pkg>
+# makepkg refuses to run as root, so the build runs as an unprivileged user with
+# passwordless sudo for pacman (makepkg -s installs the dependencies).
+set -euo pipefail
+
+pkg=${1:?usage: check-package <pkg>}
+root=$(cd "$(dirname "$0")/.." && pwd)
+src=$root/$pkg
+[[ -f $src/PKGBUILD ]] || { echo "no PKGBUILD in $src" >&2; exit 1; }
+
+pacman -Syu --noconfirm --needed git namcap >/dev/null
+
+id builder &>/dev/null || useradd -m builder
+echo 'builder ALL=(root) NOPASSWD: /usr/bin/pacman' > /etc/sudoers.d/builder
+
+work=/home/builder/$pkg
+rm -rf "$work"
+cp -r "$src" "$work"
+chown -R builder: "$work"
+
+exclude=$(awk -v p="$pkg" '$1 == p { print $2 }' "$root/.github/namcap-exclude")
+
+lint() {
+  local out
+  out=$(namcap ${exclude:+--exclude "$exclude"} "$@")
+  [[ -n $out ]] && echo "$out"
+  ! grep -q ' E: ' <<<"$out"
+}
+
+as_builder() { (cd "$work" && sudo -u builder "$@"); }
+
+echo "::group::.SRCINFO"
+as_builder makepkg --printsrcinfo | tee /tmp/srcinfo
+echo "::endgroup::"
+
+echo "::group::namcap PKGBUILD"
+(cd "$work" && lint PKGBUILD)
+echo "::endgroup::"
+
+# Only x86_64 gets built; other arches get their sources and checksums verified.
+mapfile -t arches < <(sed -n 's/^\tarch = //p' /tmp/srcinfo)
+for arch in "${arches[@]}"; do
+  [[ $arch == x86_64 || $arch == any ]] && continue
+  echo "::group::verify $arch sources"
+  conf=/tmp/makepkg-$arch.conf
+  { cat /etc/makepkg.conf; echo "CARCH=$arch"; } > "$conf"
+  as_builder makepkg --config "$conf" --verifysource
+  echo "::endgroup::"
+done
+
+echo "::group::makepkg"
+as_builder makepkg --syncdeps --noconfirm --cleanbuild
+echo "::endgroup::"
+
+# Debug packages are skipped: their build-id symlinks point into the main
+# package, which namcap reports as dangling.
+echo "::group::namcap package"
+(
+  cd "$work"
+  packages=()
+  for f in ./*.pkg.tar.zst; do [[ $f == *-debug-* ]] || packages+=("$f"); done
+  lint "${packages[@]}"
+)
+echo "::endgroup::"
