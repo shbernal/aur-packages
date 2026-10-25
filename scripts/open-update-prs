@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# Turn the PKGBUILD bumps left in the working tree by upgrade-packages into one
+# branch and pull request per upstream release. Packages built from the same
+# upstream repo (mantisbt-cli and mantisbt-cli-bin) share a pull request. A
+# release whose branch already exists on origin is skipped.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+base=$(git rev-parse HEAD)
+declare -A groups=()
+
+for pkg in $(git diff --name-only -- '*/PKGBUILD' | cut -d/ -f1); do
+  upstream=$(sed -n 's/^github = "\(.*\)"/\1/p' "$pkg/.nvchecker.toml")
+  ver=$(sed -n 's/^pkgver=//p' "$pkg/PKGBUILD")
+  groups["$upstream $ver"]+="$pkg "
+done
+
+if (( ${#groups[@]} == 0 )); then
+  echo "Everything is up to date"
+  exit 0
+fi
+
+git stash -q
+
+for key in "${!groups[@]}"; do
+  ver=${key#* }
+  mapfile -t pkgs < <(tr ' ' '\n' <<<"${groups[$key]}" | sed '/^$/d' | sort)
+  branch=update/${pkgs[0]}-$ver
+
+  if git ls-remote --exit-code -q origin "refs/heads/$branch" >/dev/null; then
+    echo "$branch: already open"
+    continue
+  fi
+
+  git checkout -q -B "$branch" "$base"
+  git checkout -q 'stash@{0}' -- "${pkgs[@]/%//PKGBUILD}"
+  title="Update ${pkgs[*]} to $ver"
+  git commit -q -m "$title"
+  git push -q origin "$branch"
+  gh pr create --head "$branch" --base main --title "$title" \
+    --body "Upstream release: https://github.com/${key% *}/releases/tag/v$ver"$'\n\n'"AI disclosure: opened by the Updates workflow, no AI involved"
+done
+
+git checkout -q --detach "$base"
+git stash drop -q

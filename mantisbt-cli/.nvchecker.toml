@@ -1,0 +1,5 @@
+[mantisbt-cli]
+source = "github"
+github = "overworks/mantisbt-cli"
+use_latest_release = true
+prefix = "v"

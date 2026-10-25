@@ -1,0 +1,5 @@
+[amass]
+source = "github"
+github = "owasp-amass/amass"
+use_latest_release = true
+prefix = "v"

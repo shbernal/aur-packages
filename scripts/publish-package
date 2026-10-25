@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Sync one package dir to its AUR repo: the AUR tree becomes the dir's tracked
-# files plus a generated .SRCINFO, committed with the subject and author of the
+# files (minus .nvchecker.toml, which only this repo's tooling reads) plus a
+# generated .SRCINFO, committed with the subject and author of the
 # last monorepo commit touching the dir. No-op when the AUR is already in sync.
 #   publish-package [--dry-run] <pkg>
 set -euo pipefail
@@ -19,7 +20,7 @@ git clone -q "ssh://aur@aur.archlinux.org/$pkg.git" "$aur" 2>/dev/null
 git -C "$aur" checkout -q -B master
 
 git -C "$aur" rm -rq --ignore-unmatch .
-git ls-files -z "$pkg" | while IFS= read -r -d '' f; do
+git ls-files -z -- "$pkg" ":!$pkg/.nvchecker.toml" | while IFS= read -r -d '' f; do
   dest=$aur/${f#"$pkg"/}
   mkdir -p "$(dirname "$dest")"
   cp "$f" "$dest"

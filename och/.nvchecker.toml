@@ -1,0 +1,5 @@
+[och]
+source = "github"
+github = "shbernal/och"
+use_latest_release = true
+prefix = "v"

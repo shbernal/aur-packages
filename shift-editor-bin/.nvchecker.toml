@@ -1,0 +1,7 @@
+# Upstream flags every release as a prerelease and keeps a moving "nightly" tag
+[shift-editor-bin]
+source = "github"
+github = "shift-editor/shift"
+use_max_tag = true
+include_regex = 'v\d+\.\d+\.\d+'
+prefix = "v"
