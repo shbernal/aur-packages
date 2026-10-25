@@ -1,0 +1,14 @@
+pkgbase = och
+	pkgdesc = Small helper for OpenClaw TUI session management.
+	pkgver = 0.1.8
+	pkgrel = 1
+	url = https://github.com/shbernal/och
+	arch = any
+	license = MIT
+	depends = bash
+	depends = jq
+	depends = moreutils
+	source = och-0.1.8.tar.gz::https://github.com/shbernal/och/archive/refs/tags/v0.1.8.tar.gz
+	sha256sums = 82c1ea5266c354e935408555e311838ea733f47e8b81ecc52d36d0d8749882d2
+
+pkgname = och
