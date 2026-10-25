@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Sync one package dir to its AUR repo: the AUR tree becomes the dir's tracked
+# files plus a generated .SRCINFO, committed with the subject and author of the
+# last monorepo commit touching the dir. No-op when the AUR is already in sync.
+#   publish-package [--dry-run] <pkg>
+set -euo pipefail
+
+dry_run=false
+if [[ ${1:-} == --dry-run ]]; then dry_run=true; shift; fi
+pkg=${1:?usage: publish-package [--dry-run] <pkg>}
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$root"
+[[ -f $pkg/PKGBUILD ]] || { echo "no PKGBUILD in $pkg" >&2; exit 1; }
+
+aur=$(mktemp -d)
+trap 'rm -rf "$aur"' EXIT
+git clone -q "ssh://aur@aur.archlinux.org/$pkg.git" "$aur" 2>/dev/null
+git -C "$aur" checkout -q -B master
+
+git -C "$aur" rm -rq --ignore-unmatch .
+git ls-files -z "$pkg" | while IFS= read -r -d '' f; do
+  dest=$aur/${f#"$pkg"/}
+  mkdir -p "$(dirname "$dest")"
+  cp "$f" "$dest"
+done
+scripts/srcinfo "$pkg" > "$aur/.SRCINFO"
+git -C "$aur" add -A
+
+if git -C "$aur" diff --cached --quiet; then
+  echo "$pkg: AUR already in sync"
+  exit 0
+fi
+
+if $dry_run; then
+  echo "$pkg: would publish"
+  git -C "$aur" diff --cached --stat
+  git -C "$aur" diff --cached
+  exit 0
+fi
+
+subject=$(git log -1 --format=%s -- "$pkg")
+author=$(git log -1 --format='%an <%ae>' -- "$pkg")
+git -C "$aur" commit -q --author="$author" -m "$subject"
+git -C "$aur" push -q origin master
+echo "$pkg: published $(git -C "$aur" rev-parse --short HEAD) \"$subject\""

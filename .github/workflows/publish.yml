@@ -1,0 +1,52 @@
+name: Publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to resync (empty for all; in-sync packages are skipped)
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: aur
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Configure AUR SSH
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          AUR_KNOWN_HOSTS: ${{ secrets.AUR_KNOWN_HOSTS }}
+        run: |
+          install -dm700 ~/.ssh
+          install -m600 <(printf '%s\n' "$AUR_SSH_PRIVATE_KEY") ~/.ssh/aur
+          printf '%s\n' "$AUR_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host aur.archlinux.org\n  User aur\n  IdentityFile ~/.ssh/aur\n  IdentitiesOnly yes\n' > ~/.ssh/config
+
+      - name: Publish changed packages
+        env:
+          BASE: ${{ github.event_name == 'push' && github.event.before || '' }}
+          PACKAGE: ${{ inputs.package }}
+        run: |
+          git config --global user.name shbernal
+          git config --global user.email shbernal.01@gmail.com
+          if [[ -n $PACKAGE ]]; then
+            packages=$PACKAGE
+          else
+            packages=$(scripts/changed-packages "$BASE" HEAD)
+          fi
+          for pkg in $packages; do
+            scripts/publish-package "$pkg"
+          done

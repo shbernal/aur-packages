@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Print the .SRCINFO of a package. Uses the host makepkg on Arch, otherwise an
+# Arch container running as the calling user (makepkg refuses root).
+set -euo pipefail
+
+pkg=${1:?usage: srcinfo <pkg>}
+dir=$(cd "$(dirname "$0")/.." && pwd)/$pkg
+
+if command -v makepkg >/dev/null; then
+  (cd "$dir" && makepkg --printsrcinfo)
+else
+  tmp=(-e BUILDDIR=/tmp -e PKGDEST=/tmp -e SRCDEST=/tmp -e SRCPKGDEST=/tmp -e LOGDEST=/tmp)
+  docker run --rm --user "$(id -u):$(id -g)" "${tmp[@]}" \
+    -v "$dir:/pkg:ro" -w /pkg archlinux:base-devel makepkg --printsrcinfo
+fi
