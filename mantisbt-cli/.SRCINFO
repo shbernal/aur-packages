@@ -1,0 +1,14 @@
+pkgbase = mantisbt-cli
+	pkgdesc = Command line client for the MantisBT REST API
+	pkgver = 0.3.0
+	pkgrel = 1
+	url = https://github.com/overworks/mantisbt-cli
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	makedepends = go
+	depends = glibc
+	source = mantisbt-cli-0.3.0.tar.gz::https://github.com/overworks/mantisbt-cli/archive/refs/tags/v0.3.0.tar.gz
+	sha256sums = d98de186484cedf8e1ac27f2afc2c1e71ab37adc0213dba605316da4b1512b9f
+
+pkgname = mantisbt-cli
