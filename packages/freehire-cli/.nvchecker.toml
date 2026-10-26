@@ -1,0 +1,5 @@
+[freehire-cli]
+source = "github"
+github = "strelov1/freehire-cli"
+use_latest_release = true
+prefix = "v"
