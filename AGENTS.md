@@ -5,7 +5,7 @@
 - Key commands
   - `docker run --rm -v "$PWD:/repo:ro" -w /repo archlinux:base-devel scripts/check-package <pkg>`: what CI runs per package
   - `scripts/publish-package --dry-run <pkg>`: diff between this repo and the AUR
-  - `docker run --rm -e HOST_UID="$(id -u)" -e GITHUB_TOKEN -v "$PWD:/repo" -w /repo archlinux:base-devel scripts/upgrade-packages`: bump everything to upstream
+  - `docker run --rm -e HOST_UID="$(id -u)" -e GITHUB_TOKEN -v "$PWD:/repo" -w /repo archlinux:base-devel scripts/bump-packages`: bump everything to upstream
 
 - Conventions
   - `.SRCINFO` is never committed; `publish-package` generates it.

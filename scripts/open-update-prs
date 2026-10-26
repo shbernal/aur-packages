@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Turn the PKGBUILD bumps left in the working tree by upgrade-packages into one
+# Turn the PKGBUILD bumps left in the working tree by bump-packages into one
 # branch and pull request per upstream release. Packages built from the same
 # upstream repo (mantisbt-cli and mantisbt-cli-bin) share a pull request. A
 # release whose branch already exists on origin is skipped.
