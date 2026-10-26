@@ -1,6 +1,6 @@
 # AI project guidelines
 
-`aur-packages`: the PKGBUILDs of shbernal's AUR packages, one directory per package under `packages/`. GitHub is the source of truth; the AUR repos are deploy targets written only by `publish.yml`.
+`aur-packages`: the PKGBUILDs of shbernal's AUR packages, one directory per package under `packages/`. This repo is the source of truth; the AUR repos are deploy targets written only by `publish.yml`.
 
 - Key commands
   - `docker run --rm -v "$PWD:/repo:ro" -w /repo archlinux:base-devel scripts/check-package <pkg>`: what CI runs per package
@@ -8,6 +8,7 @@
   - `docker run --rm -e HOST_UID="$(id -u)" -e GITHUB_TOKEN -v "$PWD:/repo" -w /repo archlinux:base-devel scripts/bump-packages`: bump everything to upstream
 
 - Conventions
+  - Use the terms in `GLOSSARY.md` and avoid the words under `_Avoid_`.
   - `.SRCINFO` is never committed; `publish-package` generates it.
   - Every versioned package has an `.nvchecker.toml` (`-git` packages don't). It is not published to the AUR.
   - namcap errors fail CI. An error expected for one package goes in `.github/namcap-exclude`, not a blanket skip.
