@@ -3,18 +3,23 @@ name: Publish
 on:
   push:
     branches: [main]
+    paths:
+      - "packages/**"
+      - "!packages/*/.nvchecker.toml"
   workflow_dispatch:
     inputs:
       package:
-        description: Package to resync (empty for all; in-sync packages are skipped)
+        description: Package to publish (empty for all)
         required: false
 
 permissions:
   contents: read
 
+# Every run publishes all out-of-sync packages, so a newer run replaces one
+# still waiting for approval without losing anything.
 concurrency:
   group: publish
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   publish:
@@ -35,9 +40,8 @@ jobs:
           printf '%s\n' "$AUR_KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host aur.archlinux.org\n  User aur\n  IdentityFile ~/.ssh/aur\n  IdentitiesOnly yes\n' > ~/.ssh/config
 
-      - name: Publish changed packages
+      - name: Publish out-of-sync packages
         env:
-          BASE: ${{ github.event_name == 'push' && github.event.before || '' }}
           PACKAGE: ${{ inputs.package }}
         run: |
           git config --global user.name shbernal
@@ -45,7 +49,7 @@ jobs:
           if [[ -n $PACKAGE ]]; then
             packages=$PACKAGE
           else
-            packages=$(scripts/changed-packages "$BASE" HEAD)
+            packages=$(scripts/changed-packages)
           fi
           for pkg in $packages; do
             scripts/publish-package "$pkg"
