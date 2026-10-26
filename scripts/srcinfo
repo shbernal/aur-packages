@@ -4,7 +4,7 @@
 set -euo pipefail
 
 pkg=${1:?usage: srcinfo <pkg>}
-dir=$(cd "$(dirname "$0")/.." && pwd)/$pkg
+dir=$(cd "$(dirname "$0")/.." && pwd)/packages/$pkg
 
 if command -v makepkg >/dev/null; then
   (cd "$dir" && makepkg --printsrcinfo)

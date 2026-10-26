@@ -7,7 +7,7 @@ set -euo pipefail
 
 pkg=${1:?usage: check-package <pkg>}
 root=$(cd "$(dirname "$0")/.." && pwd)
-src=$root/$pkg
+src=$root/packages/$pkg
 [[ -f $src/PKGBUILD ]] || { echo "no PKGBUILD in $src" >&2; exit 1; }
 
 pacman -Syu --noconfirm --needed git namcap >/dev/null
