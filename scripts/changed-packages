@@ -16,5 +16,5 @@ fi
 
 for d in $dirs; do
   d=${d%/}
-  [[ -f $d/PKGBUILD ]] && echo "$d"
+  if [[ -f $d/PKGBUILD ]]; then echo "$d"; fi
 done | sort -u
