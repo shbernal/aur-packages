@@ -12,7 +12,8 @@ pkg=${1:?usage: publish-package [--dry-run] <pkg>}
 
 root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
-[[ -f $pkg/PKGBUILD ]] || { echo "no PKGBUILD in $pkg" >&2; exit 1; }
+dir=packages/$pkg
+[[ -f $dir/PKGBUILD ]] || { echo "no PKGBUILD in $dir" >&2; exit 1; }
 
 aur=$(mktemp -d)
 trap 'rm -rf "$aur"' EXIT
@@ -20,8 +21,8 @@ git clone -q "ssh://aur@aur.archlinux.org/$pkg.git" "$aur" 2>/dev/null
 git -C "$aur" checkout -q -B master
 
 git -C "$aur" rm -rq --ignore-unmatch .
-git ls-files -z -- "$pkg" ":!$pkg/.nvchecker.toml" | while IFS= read -r -d '' f; do
-  dest=$aur/${f#"$pkg"/}
+git ls-files -z -- "$dir" ":!$dir/.nvchecker.toml" | while IFS= read -r -d '' f; do
+  dest=$aur/${f#"$dir"/}
   mkdir -p "$(dirname "$dest")"
   cp "$f" "$dest"
 done
@@ -40,8 +41,8 @@ if $dry_run; then
   exit 0
 fi
 
-subject=$(git log -1 --format=%s -- "$pkg")
-author=$(git log -1 --format='%an <%ae>' -- "$pkg")
+subject=$(git log -1 --format=%s -- "$dir")
+author=$(git log -1 --format='%an <%ae>' -- "$dir")
 git -C "$aur" commit -q --author="$author" -m "$subject"
 git -C "$aur" push -q origin master
 echo "$pkg: published $(git -C "$aur" rev-parse --short HEAD) \"$subject\""

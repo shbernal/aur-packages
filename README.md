@@ -45,7 +45,7 @@ flowchart LR
     P -->|generated .SRCINFO, approved deploy| AUR[(AUR)]
 ```
 
-- Each top-level directory is one AUR package, with its full AUR history.
+- Each directory under `packages/` is one AUR package, with its full AUR history.
 - `.SRCINFO` is not tracked here. It is generated on publish, so it always matches the PKGBUILD.
 - Every pull request builds the changed packages in `archlinux:base-devel` and runs namcap on the PKGBUILD and the built package.
 - A daily job checks upstream releases and opens one pull request per release, with the version and checksums already bumped.

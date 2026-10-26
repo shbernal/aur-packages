@@ -1,6 +1,6 @@
 # AI project guidelines
 
-`aur-packages`: the PKGBUILDs of shbernal's AUR packages, one top-level directory per package. GitHub is the source of truth; the AUR repos are deploy targets written only by `publish.yml`.
+`aur-packages`: the PKGBUILDs of shbernal's AUR packages, one directory per package under `packages/`. GitHub is the source of truth; the AUR repos are deploy targets written only by `publish.yml`.
 
 - Key commands
   - `docker run --rm -v "$PWD:/repo:ro" -w /repo archlinux:base-devel scripts/check-package <pkg>`: what CI runs per package

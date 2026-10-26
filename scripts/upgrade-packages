@@ -20,6 +20,7 @@ if [[ -n ${GITHUB_TOKEN:-} ]]; then
   chown builder /home/builder/.config/nvchecker/keyfile.toml
 fi
 
+cd packages
 mapfile -t packages < <(for f in */.nvchecker.toml; do dirname "$f"; done)
 sudo -u builder env TERM=xterm SRCDEST=/tmp BUILDDIR=/tmp \
   pkgctl version upgrade --verbose "${packages[@]}"
