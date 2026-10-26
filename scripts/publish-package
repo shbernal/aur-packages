@@ -2,7 +2,7 @@
 # Sync one package dir to its AUR repo: the AUR tree becomes the dir's tracked
 # files (minus .nvchecker.toml, which only this repo's tooling reads) plus a
 # generated .SRCINFO, committed with the subject and author of the
-# last monorepo commit touching the dir. No-op when the AUR is already in sync.
+# last commit in this repo touching the dir. No-op when the AUR is already in sync.
 #   publish-package [--dry-run] <pkg>
 set -euo pipefail
 

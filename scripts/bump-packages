@@ -3,7 +3,7 @@
 # (pkgver, pkgrel reset, checksums), in place. Runs as root in an Arch container
 # with the repo mounted read-write:
 #   docker run --rm -e HOST_UID="$(id -u)" -e GITHUB_TOKEN -v "$PWD:/repo" -w /repo \
-#     archlinux:base-devel scripts/upgrade-packages
+#     archlinux:base-devel scripts/bump-packages
 # The bump itself runs as a user owning the checkout, since makepkg refuses root.
 # pkgctl's progress output calls tput unguarded, which fails without a terminal
 # (CI, docker without -t), hence the forced TERM.
