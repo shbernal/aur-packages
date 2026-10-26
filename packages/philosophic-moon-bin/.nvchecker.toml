@@ -1,0 +1,5 @@
+[philosophic-moon-bin]
+source = "github"
+github = "SorBalda/philosophic-moon"
+use_latest_release = true
+prefix = "v"
