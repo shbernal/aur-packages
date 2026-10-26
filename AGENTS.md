@@ -13,6 +13,8 @@
   - Every versioned package has an `.nvchecker.toml` (`-git` packages don't). It is not published to the AUR.
   - namcap errors fail CI. An error expected for one package goes in `.github/namcap-exclude`, not a blanket skip.
   - Adding a package: create the dir with a PKGBUILD (and `.nvchecker.toml`), the AUR repo is created on first publish. Removing a dir doesn't touch the AUR; deletion is a manual AUR request.
+  - We work in PRs. CI green on the first run: merge. A red run counts even if a re-run goes green; re-run only to tell a flake from a break.
+
 
 - Secrets
   - `aur` environment (main only, required reviewer): `AUR_SSH_PRIVATE_KEY` (dedicated CI key, not the personal one), `AUR_KNOWN_HOSTS`.
