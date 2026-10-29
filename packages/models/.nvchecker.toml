@@ -1,0 +1,5 @@
+[models]
+source = "github"
+github = "reyamira/models"
+use_latest_release = true
+prefix = "v"
