@@ -33,7 +33,6 @@ depends=(
   'nspr'
   'nss'
   'pango'
-  'sqlite'
   'systemd-libs'
   'xdg-utils'
 )
