@@ -1,0 +1,5 @@
+[remder-bin]
+source = "github"
+github = "Keyboard1000n17/remder"
+use_latest_release = true
+prefix = "remder-v"

@@ -23,6 +23,7 @@ The PKGBUILDs behind shbernal's AUR packages, built, checked and published from 
 | [mantisbt-cli-bin][aur-mantisbt-cli-bin] | The same, from the upstream release binaries (x86_64, aarch64) | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
 | [mantisbt-cli-git][aur-mantisbt-cli-git] | The same, from the latest commit | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
 | [och][aur-och] | Small helper for OpenClaw TUI session management | [shbernal/och](https://github.com/shbernal/och) |
+| [remder-bin][aur-remder-bin] | Renders markdown in the terminal, from the upstream release binaries (x86_64, aarch64) | [Keyboard1000n17/remder](https://github.com/Keyboard1000n17/remder) |
 | [shift-editor-bin][aur-shift-editor-bin] | Cross-platform font editor built in Rust and TypeScript | [shift-editor/shift](https://github.com/shift-editor/shift) |
 
 ## Install
@@ -62,4 +63,5 @@ flowchart LR
 [aur-mantisbt-cli-bin]: https://aur.archlinux.org/packages/mantisbt-cli-bin
 [aur-mantisbt-cli-git]: https://aur.archlinux.org/packages/mantisbt-cli-git
 [aur-och]: https://aur.archlinux.org/packages/och
+[aur-remder-bin]: https://aur.archlinux.org/packages/remder-bin
 [aur-shift-editor-bin]: https://aur.archlinux.org/packages/shift-editor-bin
