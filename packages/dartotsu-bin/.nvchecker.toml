@@ -1,0 +1,5 @@
+[dartotsu-bin]
+source = "github"
+github = "aayush2622/Dartotsu"
+use_latest_release = true
+prefix = "v"

@@ -8,33 +8,25 @@ The PKGBUILDs behind shbernal's AUR packages, built, checked and published from 
 
 ---
 
-[Packages](#packages) • [Install](#install) • [How it works](#how-it-works)
+[Install](#install) • [Contributing](#contributing) • [How it works](#how-it-works)
 
 ---
 
 </div>
 
-## Packages
-
-| Package | What it is | Upstream |
-| --- | --- | --- |
-| [amass][aur-amass] | In-depth attack surface mapping and asset discovery | [owasp-amass/amass](https://github.com/owasp-amass/amass) |
-| [mantisbt-cli][aur-mantisbt-cli] | Command line client for the MantisBT REST API, built from source | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
-| [mantisbt-cli-bin][aur-mantisbt-cli-bin] | The same, from the upstream release binaries (x86_64, aarch64) | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
-| [mantisbt-cli-git][aur-mantisbt-cli-git] | The same, from the latest commit | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
-| [och][aur-och] | Small helper for OpenClaw TUI session management | [shbernal/och](https://github.com/shbernal/och) |
-| [remder-bin][aur-remder-bin] | Renders markdown in the terminal, from the upstream release binaries (x86_64, aarch64) | [Keyboard1000n17/remder](https://github.com/Keyboard1000n17/remder) |
-| [shift-editor-bin][aur-shift-editor-bin] | Cross-platform font editor built in Rust and TypeScript | [shift-editor/shift](https://github.com/shift-editor/shift) |
-
 ## Install
 
-Install from the AUR with any AUR helper, for example:
+The packages are listed [on the AUR](https://aur.archlinux.org/packages?SeB=m&K=shbernal). Install them with any AUR helper, for example:
 
 ```bash
 yay -S och
 ```
 
 Report packaging problems as issues here. Bugs in the software itself belong upstream.
+
+## Contributing
+
+AUR registration is closed for now, so if you can't upload a package yourself, submit your PKGBUILD as a pull request and I can publish it for you. [CONTRIBUTING.md](CONTRIBUTING.md) has what the pull request needs.
 
 ## How it works
 
@@ -58,10 +50,3 @@ flowchart LR
 [publish-badge]: https://img.shields.io/github/actions/workflow/status/shbernal/aur-packages/publish.yml?branch=main&style=for-the-badge&label=publish&logo=archlinux&logoColor=white&color=1793d1
 [license]: LICENSE
 [license-badge]: https://img.shields.io/github/license/shbernal/aur-packages?style=for-the-badge&color=4d5a6b
-[aur-amass]: https://aur.archlinux.org/packages/amass
-[aur-mantisbt-cli]: https://aur.archlinux.org/packages/mantisbt-cli
-[aur-mantisbt-cli-bin]: https://aur.archlinux.org/packages/mantisbt-cli-bin
-[aur-mantisbt-cli-git]: https://aur.archlinux.org/packages/mantisbt-cli-git
-[aur-och]: https://aur.archlinux.org/packages/och
-[aur-remder-bin]: https://aur.archlinux.org/packages/remder-bin
-[aur-shift-editor-bin]: https://aur.archlinux.org/packages/shift-editor-bin
