@@ -2,7 +2,8 @@
 # Turn the PKGBUILD bumps left in the working tree by bump-packages into one
 # branch and pull request per upstream release. Packages built from the same
 # upstream repo (mantisbt-cli and mantisbt-cli-bin) share a pull request. A
-# release whose branch already exists on origin is skipped.
+# release whose branch already exists on origin is skipped. Opening a pull
+# request closes the older update pull requests of the same packages.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
@@ -38,8 +39,17 @@ for key in "${!groups[@]}"; do
   title="Update ${pkgs[*]} to $ver"
   git commit -q -m "$title"
   git push -q origin "$branch"
-  gh pr create --head "$branch" --base main --title "$title" \
-    --body "Upstream release: https://github.com/${key% *}/releases/tag/v$ver"$'\n\n'"AI disclosure: opened by the Updates workflow, no AI involved"
+  url=$(gh pr create --head "$branch" --base main --title "$title" \
+    --body "Upstream release: https://github.com/${key% *}/releases/tag/v$ver"$'\n\n'"AI disclosure: opened by the Updates workflow, no AI involved")
+  echo "$url"
+
+  gh pr list --state open --base main --json number,headRefName \
+    --jq '.[] | "\(.number) \(.headRefName)"' |
+    while read -r number head; do
+      if [[ $head == "update/${pkgs[0]}-"[0-9]* && $head != "$branch" ]]; then
+        gh pr close "$number" --delete-branch --comment "Superseded by $url"
+      fi
+    done
 done
 
 git checkout -q --detach "$base"
