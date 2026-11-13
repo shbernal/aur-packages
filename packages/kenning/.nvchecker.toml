@@ -1,0 +1,5 @@
+[kenning]
+source = "github"
+github = "RishonDev/kenning"
+use_latest_release = true
+prefix = "v"
