@@ -12,7 +12,7 @@ pkgrel=1
 arch=(x86_64 aarch64)
 url='https://github.com/RishonDev/kenning'
 license=(GPL-2.0-or-later MIT Apache-2.0)
-makedepends=(cmake extra-cmake-modules meson ninja qt6-tools
+makedepends=(cmake extra-cmake-modules ninja qt6-tools
              # plasma-login-manager
              kauth kcmutils kconfig kcoreaddons kdbusaddons ki18n kio kirigami kpackage kservice
              layer-shell-qt libkscreen libplasma libxau pam plasma-workspace qt6-5compat qt6-base qt6-declarative systemd-libs
@@ -39,11 +39,11 @@ prepare() {
 }
 
 build() {
-  cmake -B kenning-build -S "$srcdir/kenning-$pkgver" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
+  cmake -B kenning-build -G Ninja -S "$srcdir/kenning-$pkgver" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib \
     -DKDE_INSTALL_LIBEXECDIR=lib -DKENNING_NETWORKS_DIR="$srcdir" -DCMAKE_BUILD_TYPE=RelWithDebInfo
   cmake --build kenning-build
 
-  cmake -B plm-build -S plasma-login-manager-$_plmver -DKDE_INSTALL_LIBEXECDIR=lib \
+  cmake -B plm-build -G Ninja -S plasma-login-manager-$_plmver -DKDE_INSTALL_LIBEXECDIR=lib \
     -DDBUS_CONFIG_FILENAME=plasma_org.freedesktop.DisplayManager.conf
   cmake --build plm-build
 }
