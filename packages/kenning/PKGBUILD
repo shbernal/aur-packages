@@ -75,7 +75,6 @@ package_plasma-login-manager-kenning() {
   provides=("plasma-login-manager=$_plmver")
   conflicts=(plasma-login-manager plasma-login-manager-faceunlock)
   replaces=(plasma-login-manager-faceunlock)
-  groups=(plasma)
 
   DESTDIR="$pkgdir" cmake --install plm-build
   install -Dm644 /dev/stdin "$pkgdir/usr/share/kenning/login-manager" <<< "plasma-login-manager-kenning $_plmver"
