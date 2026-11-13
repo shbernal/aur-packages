@@ -50,6 +50,7 @@ build() {
 
 package_kenning() {
   pkgdesc='Kenning: face unlock for KDE Plasma'
+  license=(GPL-2.0-or-later MIT Apache-2.0)  # MIT: YuNet model, Apache-2.0: SFace model
   depends=(kauth kcmutils kconfig kcoreaddons ki18n kirigami libplasma plasma-desktop qt6-base qt6-declarative
            libarchive libnotify opencv pam python systemd-libs)
   optdepends=('plasma-login-manager-kenning: start face unlock as soon as the login screen appears'
