@@ -36,7 +36,7 @@ _Avoid_: binary package
 ### Lifecycle
 
 **Check**:
-Checking one Package's conventions (dir name, header, `.nvchecker.toml` or VCS source, pinned sources), building it in `archlinux:base-devel` and running namcap on its PKGBUILD and Built packages. What CI runs per changed Package.
+Checking one Package's conventions (dir name, header, `.nvchecker.toml` or VCS source, pinned sources, committed PGP keys), building it in `archlinux:base-devel` and running namcap on its PKGBUILD and Built packages. What CI runs per changed Package.
 _Avoid_: test, lint
 
 **namcap exclusion**:

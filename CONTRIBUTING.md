@@ -13,6 +13,7 @@ Before you open the pull request:
    - `PKGBUILD`.
    - `.nvchecker.toml`, unless it's a `-git` package. The Updates workflow reads it to open a pull request for each upstream release. See [`packages/remder-bin/.nvchecker.toml`](packages/remder-bin/.nvchecker.toml) and the [nvchecker docs](https://nvchecker.readthedocs.io/en/latest/usage.html).
    - Any files the PKGBUILD installs (`.desktop`, `.install`, patches).
+   - For signed sources, each key in `validpgpkeys` as `keys/pgp/<fingerprint>.asc` (`gpg --export --armor <fingerprint>`). CI imports these to verify the signatures.
 
    Don't add `.SRCINFO`. Publishing generates it.
 3. Start the PKGBUILD with this header, your name going on the `Contributor` line:

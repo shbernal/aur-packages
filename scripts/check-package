@@ -69,6 +69,17 @@ printf '%s\n' "${header[@]}" | grep -qxF '# Issues and fixes: https://github.com
 moving='/(raw|blob)/(main|master|HEAD)/|raw\.githubusercontent\.com/[^/]+/[^/]+/(main|master|HEAD)/|/refs/heads/|/archive/(main|master|HEAD)\.|/releases/latest/'
 mapfile -t unpinned < <(sed -n 's/^\tsource[^ ]* = //p' /tmp/srcinfo | grep -E "$moving")
 for s in "${unpinned[@]}"; do fail "source follows a branch or latest release, so its checksum will break: $s"; done
+
+# makepkg verifies signed sources against the keys in the builder's keyring.
+# Each key in validpgpkeys is committed as keys/pgp/<fingerprint>.asc.
+mapfile -t keys < <(sed -n 's/^\tvalidpgpkeys = //p' /tmp/srcinfo)
+for key in "${keys[@]}"; do
+  if [[ -f $src/keys/pgp/$key.asc ]]; then
+    as_builder gpg --batch --quiet --import "keys/pgp/$key.asc"
+  else
+    fail "validpgpkeys lists $key, but keys/pgp/$key.asc is missing; export it with: gpg --export --armor $key > keys/pgp/$key.asc"
+  fi
+done
 echo "::endgroup::"
 
 echo "::group::namcap PKGBUILD"
