@@ -13,7 +13,6 @@ depends=(
   'alsa-lib'
   'gnutls'
   'gtk3'
-  'hicolor-icon-theme'
   'libarchive'
   'libpulse'
   'libunwind'
@@ -64,19 +63,17 @@ package() {
     esac
   done
 
-  # The bundled launcher resolves lib/ from its own directory, so the
-  # /usr/bin entry has to exec that path rather than be a symlink.
+  # Upstream's launcher script leaves an empty LD_LIBRARY_PATH entry when the
+  # variable is unset, which makes the loader search the current directory.
   install -Dm755 /dev/stdin "${pkgdir}/usr/bin/${_pkgname}" << EOF
 #!/bin/sh
-exec /usr/lib/${_pkgname}/${_pkgname} "\$@"
+LD_LIBRARY_PATH=/usr/lib/${_pkgname}/lib\${LD_LIBRARY_PATH:+:\$LD_LIBRARY_PATH} exec /usr/lib/${_pkgname}/${_pkgname}.bin "\$@"
 EOF
 
   install -Dm644 squashfs-root/${_pkgname}.desktop \
     "${pkgdir}/usr/share/applications/${_pkgname}.desktop"
   install -Dm644 squashfs-root/${_pkgname}.png \
     "${pkgdir}/usr/share/pixmaps/${_pkgname}.png"
-  install -Dm644 squashfs-root/${_pkgname}.png \
-    "${pkgdir}/usr/share/icons/hicolor/5000x5000/apps/${_pkgname}.png"
   install -Dm644 "LICENSE-${pkgver}.md" \
     "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE.md"
 }
