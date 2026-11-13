@@ -16,7 +16,9 @@ makedepends=(cmake extra-cmake-modules meson ninja qt6-tools
              kauth kcmutils kconfig kcoreaddons kdbusaddons ki18n kio kirigami kpackage kservice
              layer-shell-qt libkscreen libplasma libxau pam plasma-workspace qt6-5compat qt6-base qt6-declarative systemd-libs
              # engine
-             opencv libarchive)
+             opencv libarchive
+             # kenning runtime, required in makedepends for a split package
+             libnotify plasma-desktop python)
 source=("kenning-$pkgver.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
         https://download.kde.org/stable/plasma/$_plmver/plasma-login-manager-$_plmver.tar.xz{,.sig}
         https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx
