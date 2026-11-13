@@ -19,6 +19,7 @@ The PKGBUILDs behind shbernal's AUR packages, built, checked and published from 
 | Package | What it is | Upstream |
 | --- | --- | --- |
 | [amass][aur-amass] | In-depth attack surface mapping and asset discovery | [owasp-amass/amass](https://github.com/owasp-amass/amass) |
+| [dartotsu-bin][aur-dartotsu-bin] | Anilist client for anime and manga, from the upstream AppImage | [aayush2622/Dartotsu](https://github.com/aayush2622/Dartotsu) |
 | [mantisbt-cli][aur-mantisbt-cli] | Command line client for the MantisBT REST API, built from source | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
 | [mantisbt-cli-bin][aur-mantisbt-cli-bin] | The same, from the upstream release binaries (x86_64, aarch64) | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
 | [mantisbt-cli-git][aur-mantisbt-cli-git] | The same, from the latest commit | [overworks/mantisbt-cli](https://github.com/overworks/mantisbt-cli) |
@@ -59,6 +60,7 @@ flowchart LR
 [license]: LICENSE
 [license-badge]: https://img.shields.io/github/license/shbernal/aur-packages?style=for-the-badge&color=4d5a6b
 [aur-amass]: https://aur.archlinux.org/packages/amass
+[aur-dartotsu-bin]: https://aur.archlinux.org/packages/dartotsu-bin
 [aur-mantisbt-cli]: https://aur.archlinux.org/packages/mantisbt-cli
 [aur-mantisbt-cli-bin]: https://aur.archlinux.org/packages/mantisbt-cli-bin
 [aur-mantisbt-cli-git]: https://aur.archlinux.org/packages/mantisbt-cli-git
