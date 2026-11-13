@@ -24,13 +24,14 @@ Before you open the pull request:
    ```
 
 4. Use real checksums (`SKIP` only for VCS sources) and an SPDX identifier in `license`. Name packages that ship upstream binaries `-bin` and packages that build the latest commit `-git`, with `provides` and `conflicts` on the plain name.
-5. Run the same check CI runs. It builds the package in a clean container and runs namcap on the PKGBUILD and the built package:
+5. Pin every source to a release or commit. A URL that follows a branch (`raw/main/...`) or the latest release changes under its checksum.
+6. Run the same check CI runs. It checks the conventions above, builds the package in a clean container and runs namcap on the PKGBUILD and the built package:
 
    ```bash
    docker run --rm -v "$PWD:/repo:ro" -w /repo archlinux:base-devel scripts/check-package <pkgname>
    ```
 
-   namcap errors fail CI. If an error is expected for your package (an Electron app under `/opt`, say), add a line to [`.github/namcap-exclude`](.github/namcap-exclude) with a comment saying why.
+   namcap errors fail CI, and so does a package built from source whose binaries lack FULL RELRO or PIE, a sign the build ignores makepkg's `CFLAGS`/`LDFLAGS`. If an error is expected for your package (an Electron app under `/opt`, say), add a line to [`.github/namcap-exclude`](.github/namcap-exclude) with a comment saying why.
 
 In the pull request, link the upstream project and fill in the AI disclosure line. Keep commit messages free of AI attribution such as `Co-Authored-By` trailers; the disclosure belongs in the description.
 

@@ -22,11 +22,20 @@ chown -R builder: "$work"
 
 exclude=$(awk -v p="$pkg" '$1 == p { print $2 }' "$root/.github/namcap-exclude")
 
+# namcap errors fail the check. So does missing hardening in a package built
+# from source, which means the build ignores makepkg's CFLAGS/LDFLAGS.
+fatal=' E: '
+[[ $pkg == *-bin ]] || fatal+='| W: ELF file .* lacks (FULL RELRO|PIE)'
+
+# Problems are collected so that one run reports all of them.
+failed=false
+fail() { echo "::error::$pkg: $*"; failed=true; }
+
 lint() {
   local out
-  out=$(namcap ${exclude:+--exclude "$exclude"} "$@")
+  out=$(cd "$work" && namcap ${exclude:+--exclude "$exclude"} "$@")
   [[ -n $out ]] && echo "$out"
-  ! grep -q ' E: ' <<<"$out"
+  if grep -qE "$fatal" <<<"$out"; then fail "namcap reported problems"; fi
 }
 
 as_builder() { (cd "$work" && sudo -u builder "$@"); }
@@ -35,8 +44,35 @@ echo "::group::.SRCINFO"
 as_builder makepkg --printsrcinfo | tee /tmp/srcinfo
 echo "::endgroup::"
 
+echo "::group::conventions"
+# Publish names the AUR repo after the dir.
+pkgbase=$(sed -n 's/^pkgbase = //p' /tmp/srcinfo)
+[[ $pkgbase == "$pkg" ]] || fail "pkgbase is '$pkgbase', but the dir is '$pkg'; they must match"
+
+if [[ $pkg == *-git ]]; then
+  grep -qE '^[[:space:]]source(_[^ ]+)? = ([^ ]+::)?(git|hg|svn|bzr|fossil)\+' /tmp/srcinfo ||
+    fail "-git package without a VCS source"
+  grep -qE '^pkgver\(\)' "$src/PKGBUILD" || fail "-git package without a pkgver() function"
+  [[ ! -e $src/.nvchecker.toml ]] || fail "-git package with an .nvchecker.toml; the Updates workflow is for versioned packages"
+else
+  grep -qxF "[$pkg]" "$src/.nvchecker.toml" 2>/dev/null ||
+    fail "versioned package without an .nvchecker.toml holding a [$pkg] section"
+fi
+
+mapfile -t header < <(sed -n '/^#/!q;p' "$src/PKGBUILD")
+[[ ${header[0]:-} == '# Maintainer: shbernal <shbernal.01@gmail.com>' ]] ||
+  fail "PKGBUILD must start with the Maintainer line from CONTRIBUTING.md"
+printf '%s\n' "${header[@]}" | grep -qxF '# Issues and fixes: https://github.com/shbernal/aur-packages' ||
+  fail "PKGBUILD header lacks the 'Issues and fixes' line from CONTRIBUTING.md"
+
+# A checksum pinned to a URL whose content moves breaks on the next upstream push.
+moving='/(raw|blob)/(main|master|HEAD)/|raw\.githubusercontent\.com/[^/]+/[^/]+/(main|master|HEAD)/|/refs/heads/|/archive/(main|master|HEAD)\.|/releases/latest/'
+mapfile -t unpinned < <(sed -n 's/^\tsource[^ ]* = //p' /tmp/srcinfo | grep -E "$moving")
+for s in "${unpinned[@]}"; do fail "source follows a branch or latest release, so its checksum will break: $s"; done
+echo "::endgroup::"
+
 echo "::group::namcap PKGBUILD"
-(cd "$work" && lint PKGBUILD)
+lint PKGBUILD
 echo "::endgroup::"
 
 # Only x86_64 gets built; other arches get their sources and checksums verified.
@@ -57,10 +93,9 @@ echo "::endgroup::"
 # Debug packages are skipped: their build-id symlinks point into the main
 # package, which namcap reports as dangling.
 echo "::group::namcap package"
-(
-  cd "$work"
-  packages=()
-  for f in ./*.pkg.tar.zst; do [[ $f == *-debug-* ]] || packages+=("$f"); done
-  lint "${packages[@]}"
-)
+packages=()
+for f in "$work"/*.pkg.tar.zst; do [[ $f == *-debug-* ]] || packages+=("${f##*/}"); done
+lint "${packages[@]}"
 echo "::endgroup::"
+
+! $failed
