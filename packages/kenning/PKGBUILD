@@ -62,10 +62,12 @@ package_kenning() {
 
   DESTDIR="$pkgdir" cmake --install kenning-build
   install -Dm644 -t "$pkgdir/usr/share/libalpm/hooks" "$srcdir/kenning-$pkgver"/packaging/arch/*.hook
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" "$srcdir/kenning-$pkgver"/engine/native/models/LICENSE.{yunet,sface}
 }
 
 package_plasma-login-manager-kenning() {
   pkgdesc='Plasma Login Manager that starts face unlock as soon as it appears'
+  license=(GPL-2.0-or-later)
   depends=(glibc kauth kcmutils kconfig kcoreaddons kdbusaddons ki18n kio kirigami kpackage kservice layer-shell-qt
            libkscreen libplasma libstdc++ libxau pam plasma-workspace qt6-5compat qt6-base qt6-declarative sh systemd-libs)
   optdepends=('kenning: face unlock settings and themes')
