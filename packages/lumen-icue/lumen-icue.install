@@ -1,0 +1,33 @@
+post_install() {
+  cat <<'EOF'
+==> Start the lumen daemon as your user (not as root):
+      systemctl --user enable --now lumen-icued
+==> Then open "Lumen" from the app launcher, or run lumen-tui or lumenctl.
+==> For the Omarchy bar widget:
+      omarchy plugin add https://github.com/pxSean/omarchy-lumen.git --enable
+==> If you built lumen by hand before (install.sh), stop and remove that copy first.
+    Its service and launcher files in your home take priority over this package's.
+    lumen 0.1:
+      systemctl --user disable --now lumend
+      rm ~/.local/bin/{lumend,lumenctl,lumen} ~/.config/systemd/user/lumend.service
+    lumen 0.2 or later:
+      systemctl --user disable --now lumen-icued
+      rm ~/.local/bin/{lumen-icued,lumenctl,lumen-tui} ~/.config/systemd/user/lumen-icued.service
+      rm ~/.local/share/applications/lumen.desktop
+EOF
+}
+
+post_upgrade() {
+  cat <<'EOF'
+==> Restart the daemon to run the new version:
+      systemctl --user restart lumen-icued
+EOF
+}
+
+post_remove() {
+  cat <<'EOF'
+==> If lumen-icued was enabled, disable it as your user:
+      systemctl --user disable lumen-icued
+==> Your settings are still in ~/.config/lumen; delete that folder to remove them.
+EOF
+}

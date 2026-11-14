@@ -1,0 +1,5 @@
+[lumen-icue]
+source = "github"
+github = "pxSean/lumen"
+use_max_tag = true
+prefix = "v"
