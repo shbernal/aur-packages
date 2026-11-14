@@ -10,7 +10,7 @@ pkgdesc="Lighting, fan and AIO LCD screen control for Corsair iCUE LINK hardware
 arch=('x86_64')
 url="https://github.com/pxSean/lumen"
 license=('GPL-3.0-or-later')
-depends=('gcc-libs' 'glibc')
+depends=('glibc' 'libgcc')
 makedepends=('cargo')
 optdepends=(
   'nvidia-utils: GPU temperature and load on NVIDIA cards'
