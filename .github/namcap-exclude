@@ -3,3 +3,7 @@
 
 # Electron app shipped as-is under /opt
 shift-editor-bin elfpaths
+# Self-contained upstream bundle under /opt: namcap maps the bundled libraries
+# (Python, OpenSSL, xxhash, pcre2) to system packages it then reports missing;
+# the Python it finds is in the ssh kitten's bootstrap for remote hosts
+kitty-nightly-bin elfpaths,sodepends,pydepends

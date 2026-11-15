@@ -43,6 +43,7 @@ flowchart LR
 - Every pull request builds the changed packages in `archlinux:base-devel` and runs namcap on the PKGBUILD and the built package.
 - A daily job checks upstream releases and opens one pull request per release, with the version and checksums already bumped.
 - Merging to `main` pushes each changed package to its AUR repo, after a manual approval of the `aur` deployment.
+- Nightly packages (`-nightly-bin`) follow an upstream build that changes every day. A daily job opens their pull request with auto-merge on, and they publish through the `aur-nightly` deployment, which needs no approval.
 
 [ci]: https://github.com/shbernal/aur-packages/actions/workflows/ci.yml
 [ci-badge]: https://img.shields.io/github/actions/workflow/status/shbernal/aur-packages/ci.yml?branch=main&style=for-the-badge&label=ci&logo=githubactions&logoColor=white&color=1793d1

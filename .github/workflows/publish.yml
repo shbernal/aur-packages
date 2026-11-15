@@ -15,16 +15,56 @@ on:
 permissions:
   contents: read
 
-# Every run publishes all out-of-sync packages, so a newer run replaces one
-# still waiting for approval without losing anything.
-concurrency:
-  group: publish
-  cancel-in-progress: true
-
 jobs:
-  publish:
+  # Nightly packages (*-nightly-bin) publish through the aur-nightly environment,
+  # which needs no approval; everything else waits for approval of aur.
+  targets:
     runs-on: ubuntu-latest
-    environment: aur
+    outputs:
+      matrix: ${{ steps.split.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: split
+        env:
+          PACKAGE: ${{ inputs.package }}
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
+        run: |
+          if [[ -n $PACKAGE ]]; then
+            changed=("$PACKAGE")
+          else
+            mapfile -t changed < <(scripts/changed-packages "$BEFORE" HEAD)
+          fi
+          echo "Changed: ${changed[*]}"
+          nightly=() reviewed=()
+          for pkg in "${changed[@]}"; do
+            if [[ $pkg == *-nightly-bin ]]; then nightly+=("$pkg"); else reviewed+=("$pkg"); fi
+          done
+          # The reviewed run publishes every out-of-sync package, so a newer run
+          # replaces one still waiting for approval without losing anything.
+          if (( ${#reviewed[@]} )) && [[ -z $PACKAGE ]]; then
+            mapfile -t reviewed < <(scripts/changed-packages | grep -v -- '-nightly-bin$')
+          fi
+          matrix=$(jq -nc --arg r "${reviewed[*]}" --arg n "${nightly[*]}" '[
+            if $r != "" then {environment: "aur", packages: $r} else empty end,
+            if $n != "" then {environment: "aur-nightly", packages: $n} else empty end
+          ]')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "Matrix: $matrix"
+
+  publish:
+    needs: targets
+    if: needs.targets.outputs.matrix != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.targets.outputs.matrix) }}
+    environment: ${{ matrix.environment }}
+    concurrency:
+      group: publish-${{ matrix.environment }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v7
         with:
@@ -40,17 +80,12 @@ jobs:
           printf '%s\n' "$AUR_KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host aur.archlinux.org\n  User aur\n  IdentityFile ~/.ssh/aur\n  IdentitiesOnly yes\n' > ~/.ssh/config
 
-      - name: Publish out-of-sync packages
+      - name: Publish
         env:
-          PACKAGE: ${{ inputs.package }}
+          PACKAGES: ${{ matrix.packages }}
         run: |
           git config --global user.name shbernal
           git config --global user.email shbernal.01@gmail.com
-          if [[ -n $PACKAGE ]]; then
-            packages=$PACKAGE
-          else
-            packages=$(scripts/changed-packages)
-          fi
-          for pkg in $packages; do
+          for pkg in $PACKAGES; do
             scripts/publish-package "$pkg"
           done

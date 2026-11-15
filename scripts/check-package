@@ -21,6 +21,15 @@ cp -r "$src" "$work"
 chown -R builder: "$work"
 
 exclude=$(awk -v p="$pkg" '$1 == p { print $2 }' "$root/.github/namcap-exclude")
+# namcap --exclude keeps only the last rule of a list excluded (and turns on the
+# rules that are off by default), so pass the default rules minus the excluded ones.
+rules=$(python3 -c '
+import sys, Namcap.rules
+excluded = set(filter(None, sys.argv[1].split(",")))
+if unknown := excluded - Namcap.rules.all_rules.keys():
+    sys.exit(f"unknown namcap rules in namcap-exclude: {sorted(unknown)}")
+print(",".join(n for n, r in Namcap.rules.all_rules.items() if r.enable and n not in excluded))
+' "$exclude")
 
 # namcap errors fail the check. So does missing hardening in a package built
 # from source, which means the build ignores makepkg's CFLAGS/LDFLAGS.
@@ -33,7 +42,7 @@ fail() { echo "::error::$pkg: $*"; failed=true; }
 
 lint() {
   local out
-  out=$(cd "$work" && namcap ${exclude:+--exclude "$exclude"} "$@")
+  out=$(cd "$work" && namcap --rules "$rules" "$@")
   [[ -n $out ]] && echo "$out"
   if grep -qE "$fatal" <<<"$out"; then fail "namcap reported problems"; fi
 }
@@ -54,6 +63,12 @@ if [[ $pkg == *-git ]]; then
     fail "-git package without a VCS source"
   grep -qE '^pkgver\(\)' "$src/PKGBUILD" || fail "-git package without a pkgver() function"
   [[ ! -e $src/.nvchecker.toml ]] || fail "-git package with an .nvchecker.toml; the Updates workflow is for versioned packages"
+elif [[ $pkg == *-nightly-bin ]]; then
+  # The nightly download changes in place, so a signature has to verify it.
+  grep -q '^	validpgpkeys = ' /tmp/srcinfo ||
+    fail "-nightly-bin package without validpgpkeys; its sources have no fixed checksum to verify them"
+  [[ -x $root/scripts/bump-$pkg ]] || fail "-nightly-bin package without an executable scripts/bump-$pkg for the Nightly workflow"
+  [[ ! -e $src/.nvchecker.toml ]] || fail "-nightly-bin package with an .nvchecker.toml; the Nightly workflow bumps it"
 else
   grep -qxF "[$pkg]" "$src/.nvchecker.toml" 2>/dev/null ||
     fail "versioned package without an .nvchecker.toml holding a [$pkg] section"

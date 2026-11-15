@@ -1,0 +1,61 @@
+name: Nightly
+
+# Nightly packages follow an upstream build rebuilt in place every day. Each new
+# build gets an Update PR set to auto-merge once CI passes; Publish then pushes
+# it to the AUR through the aur-nightly environment, without a manual approval.
+
+on:
+  schedule:
+    # kitty's nightly release finishes uploading around 06:40 UTC.
+    - cron: "30 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      # Pushes and pull requests made with the default GITHUB_TOKEN don't trigger
+      # CI, so branches and PRs go through UPDATES_TOKEN.
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.UPDATES_TOKEN }}
+
+      - name: Open an auto-merging pull request per new nightly build
+        env:
+          GH_TOKEN: ${{ secrets.UPDATES_TOKEN }}
+        run: |
+          git config user.name shbernal
+          git config user.email shbernal.01@gmail.com
+          base=$(git rev-parse HEAD)
+          for dir in packages/*-nightly-bin; do
+            pkg=${dir#packages/}
+            "scripts/bump-$pkg"
+            if git diff --quiet -- "$dir"; then continue; fi
+
+            ver=$(sed -n 's/^pkgver=//p' "$dir/PKGBUILD")
+            branch=update/$pkg-$ver
+            title="Update $pkg to $ver"
+            git checkout -q -B "$branch" "$base"
+            git commit -q -m "$title" -- "$dir/PKGBUILD"
+            git push -q origin "$branch"
+            url=$(gh pr create --head "$branch" --base main --title "$title" \
+              --body "Nightly build: https://github.com/kovidgoyal/kitty/releases/tag/nightly"$'\n\n'"AI disclosure: opened by the Nightly workflow, no AI involved")
+            gh pr merge "$url" --auto --squash
+            echo "$url"
+
+            gh pr list --state open --base main --json number,headRefName \
+              --jq '.[] | "\(.number) \(.headRefName)"' |
+              while read -r number head; do
+                if [[ $head == "update/$pkg-"[0-9]* && $head != "$branch" ]]; then
+                  gh pr close "$number" --delete-branch --comment "Superseded by $url"
+                fi
+              done
+            git checkout -q --detach "$base"
+          done

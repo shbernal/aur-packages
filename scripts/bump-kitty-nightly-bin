@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Bump kitty-nightly-bin to the build behind kitty's nightly release, in place.
+# The release notes name the commit and build time; the version prefix is the
+# one in kitty/constants.py at that commit. No-op when the PKGBUILD already
+# points at that commit.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+pkgbuild=packages/kitty-nightly-bin/PKGBUILD
+notes=$(gh release view nightly -R kovidgoyal/kitty --json body -q .body)
+re='generated on: ([0-9]{4})-([0-9]{2})-([0-9]{2}) ([0-9]{2}):([0-9]{2}).* from commit: ([0-9a-f]{40})'
+[[ $notes =~ $re ]] || { echo "unexpected nightly release notes: $notes" >&2; exit 1; }
+stamp=${BASH_REMATCH[1]}${BASH_REMATCH[2]}${BASH_REMATCH[3]}${BASH_REMATCH[4]}${BASH_REMATCH[5]}
+commit=${BASH_REMATCH[6]}
+
+current=$(sed -n 's/^pkgver=//p' "$pkgbuild")
+if [[ $current == *.g${commit:0:7} ]]; then
+  echo "kitty-nightly-bin: up to date at $current"
+  exit 0
+fi
+
+version=$(gh api -H 'Accept: application/vnd.github.raw' \
+  "repos/kovidgoyal/kitty/contents/kitty/constants.py?ref=$commit" |
+  sed -nE 's/^version: Version = Version\(([0-9]+), ([0-9]+), ([0-9]+)\)$/\1.\2.\3/p')
+[[ -n $version ]] || { echo "no version in kitty/constants.py at $commit" >&2; exit 1; }
+
+pkgver=$version.r$stamp.g${commit:0:7}
+sed -i -e "s/^pkgver=.*/pkgver=$pkgver/" -e 's/^pkgrel=.*/pkgrel=1/' "$pkgbuild"
+echo "kitty-nightly-bin: $current -> $pkgver"

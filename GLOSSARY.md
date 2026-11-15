@@ -29,6 +29,9 @@ A Package pinned to an Upstream release and kept current by the Updates workflow
 A `-git` Package that builds the Upstream's latest commit and works out its own `pkgver` at build time. The Updates workflow ignores it.
 _Avoid_: unversioned package
 
+**Nightly package**:
+A `-nightly-bin` Package shipping an Upstream build that is rebuilt in place under a fixed URL. Its signed sources stand in for checksums. The Nightly workflow Bumps it from `scripts/bump-<pkgname>`, auto-merges the Bump and Publishes it without approval.
+
 **Prebuilt package**:
 A `-bin` Package that ships the Upstream's prebuilt binaries instead of building from source.
 _Avoid_: binary package

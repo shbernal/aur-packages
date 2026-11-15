@@ -18,6 +18,7 @@
 
 - Secrets
   - `aur` environment (main only, required reviewer): `AUR_SSH_PRIVATE_KEY` (dedicated CI key, not the personal one), `AUR_KNOWN_HOSTS`.
+  - `aur-nightly` environment (main only, no reviewer): the same two secrets, used only for `-nightly-bin` packages.
   - `UPDATES_TOKEN`: fine-grained PAT for this repo (contents, pull requests: write), so update PRs trigger CI.
 
 - Iron Laws

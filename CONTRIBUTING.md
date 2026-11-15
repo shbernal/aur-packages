@@ -11,7 +11,7 @@ Before you open the pull request:
 1. Check that the package isn't in the official repos or already on the AUR, and that it follows the [AUR submission guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
 2. Add a directory `packages/<pkgname>/` holding:
    - `PKGBUILD`.
-   - `.nvchecker.toml`, unless it's a `-git` package. The Updates workflow reads it to open a pull request for each upstream release. See [`packages/remder-bin/.nvchecker.toml`](packages/remder-bin/.nvchecker.toml) and the [nvchecker docs](https://nvchecker.readthedocs.io/en/latest/usage.html).
+   - `.nvchecker.toml`, unless it's a `-git` or `-nightly-bin` package. The Updates workflow reads it to open a pull request for each upstream release. See [`packages/remder-bin/.nvchecker.toml`](packages/remder-bin/.nvchecker.toml) and the [nvchecker docs](https://nvchecker.readthedocs.io/en/latest/usage.html).
    - Any files the PKGBUILD installs (`.desktop`, `.install`, patches).
    - For signed sources, each key in `validpgpkeys` as `keys/pgp/<fingerprint>.asc` (`gpg --export --armor <fingerprint>`). CI imports these to verify the signatures.
 
@@ -24,8 +24,10 @@ Before you open the pull request:
    # Issues and fixes: https://github.com/shbernal/aur-packages
    ```
 
-4. Use real checksums (`SKIP` only for VCS sources) and an SPDX identifier in `license`. Name packages that ship upstream binaries `-bin` and packages that build the latest commit `-git`, with `provides` and `conflicts` on the plain name.
+4. Use real checksums (`SKIP` only for VCS sources and nightly packages) and an SPDX identifier in `license`. Name packages that ship upstream binaries `-bin` and packages that build the latest commit `-git`, with `provides` and `conflicts` on the plain name.
 5. Pin every source to a release or commit. A URL that follows a branch (`raw/main/...`) or the latest release changes under its checksum.
+
+   The exception is a nightly package, `<name>-nightly-bin`, which ships an upstream build that gets rebuilt in place under a fixed URL. Its sources use `SKIP` and must be signed, with the keys in `validpgpkeys`. The local source names carry `pkgver`, so a cached download from an older build isn't reused. It also needs an executable `scripts/bump-<pkgname>` that sets `pkgver` to the latest build and does nothing when the package is already on it. The Nightly workflow runs that script every day, auto-merges the pull request once CI passes and publishes it without approval.
 6. Run the same check CI runs. It checks the conventions above, builds the package in a clean container and runs namcap on the PKGBUILD and the built package:
 
    ```bash
