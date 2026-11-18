@@ -1,0 +1,6 @@
+[lumen-icue]
+source = "github"
+github = "pxSean/lumen"
+use_max_tag = true
+prefix = "v"
+include_regex = 'v\d+\.\d+\.\d+'
