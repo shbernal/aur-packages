@@ -1,0 +1,5 @@
+# The download page's Linux link redirects to the current versioned .deb
+[geelark-bin]
+source = "httpheader"
+url = "https://www.geelark.com/download/27764/"
+regex = 'GeeLark_x64_([\d.]+)\.deb'

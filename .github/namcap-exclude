@@ -7,3 +7,6 @@ shift-editor-bin elfpaths
 # (Python, OpenSSL, xxhash, pcre2) to system packages it then reports missing;
 # the Python it finds is in the ssh kitten's bootstrap for remote hosts
 kitty-nightly-bin elfpaths,sodepends,pydepends
+# Electron app shipped as-is under /opt; koffi bundles its build-time Python
+# generators in app.asar.unpacked, never run
+geelark-bin elfpaths,pydepends
