@@ -1,0 +1,5 @@
+# The download page only links "latest" .debs; the version is in the .deb's
+# control file, which sits in its first few KB
+[multilogin-agent-bin]
+source = "cmd"
+cmd = "curl -sfr 0-16383 https://cdn-mlx-prod.multiloginapp.com/mlx/latest/multiloginx-amd64.deb | bsdtar -xOf - control.tar.gz 2>/dev/null | bsdtar -xOf - ./control | sed -n 's/^Version: //p'"
