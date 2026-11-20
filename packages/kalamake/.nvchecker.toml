@@ -1,0 +1,5 @@
+[kalamake]
+source = "github"
+github = "kalakit/kalamake"
+use_latest_release = true
+prefix = "kalamake-v"
