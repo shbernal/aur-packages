@@ -12,6 +12,7 @@ declare -A groups=()
 
 for pkg in $(git diff --name-only -- 'packages/*/PKGBUILD' | cut -d/ -f2); do
   upstream=$(sed -n 's/^github = "\(.*\)"/\1/p' "packages/$pkg/.nvchecker.toml")
+  [[ -n $upstream ]] || upstream=$pkg
   ver=$(sed -n 's/^pkgver=//p' "packages/$pkg/PKGBUILD")
   groups["$upstream $ver"]+="$pkg "
 done
@@ -37,10 +38,16 @@ for key in "${!groups[@]}"; do
   files=("${pkgs[@]/#/packages/}")
   git checkout -q 'stash@{0}' -- "${files[@]/%//PKGBUILD}"
   title="Update ${pkgs[*]} to $ver"
+  upstream=${key% *}
+  if [[ $upstream == */* ]]; then
+    release="Upstream release: https://github.com/$upstream/releases/tag/v$ver"
+  else
+    release="Upstream: $(sed -n "s/^url=['\"]\?\([^'\"]*\).*/\1/p" "packages/$upstream/PKGBUILD")"
+  fi
   git commit -q -m "$title"
   git push -q origin "$branch"
   url=$(gh pr create --head "$branch" --base main --title "$title" \
-    --body "Upstream release: https://github.com/${key% *}/releases/tag/v$ver"$'\n\n'"AI disclosure: opened by the Updates workflow, no AI involved")
+    --body "$release"$'\n\n'"AI disclosure: opened by the Updates workflow, no AI involved")
   echo "$url"
 
   gh pr list --state open --base main --json number,headRefName \

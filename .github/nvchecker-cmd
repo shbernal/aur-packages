@@ -1,0 +1,9 @@
+# Packages whose .nvchecker.toml may use the cmd source, one per line, each with a
+# comment saying why no other source works. pkgctl refuses cmd, so bump-packages
+# runs nvchecker directly for these. A cmd runs in the Updates job, which holds
+# write tokens: review every cmd line here and in the package's .nvchecker.toml.
+
+# The CDN only serves "latest" .debs and lists no versions; the version is in the
+# control file at the start of the .deb
+multilogin-bin
+multilogin-agent-bin

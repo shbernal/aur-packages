@@ -9,7 +9,7 @@
 # (CI, docker without -t), hence the forced TERM.
 set -euo pipefail
 
-pacman -Syu --noconfirm --needed devtools nvchecker git >/dev/null
+pacman -Syu --noconfirm --needed devtools nvchecker git jq pacman-contrib >/dev/null
 
 uid=${HOST_UID:-1000}
 id builder &>/dev/null || useradd -m -u "$uid" builder
@@ -20,7 +20,34 @@ if [[ -n ${GITHUB_TOKEN:-} ]]; then
   chown builder /home/builder/.config/nvchecker/keyfile.toml
 fi
 
+# pkgctl refuses nvchecker's cmd source. The packages listed in
+# .github/nvchecker-cmd may use it; for those, nvchecker runs directly and the
+# bump happens here.
+allowed=$(sed -e 's/#.*//' -e '/^[[:space:]]*$/d' .github/nvchecker-cmd)
+
 cd packages
-mapfile -t packages < <(for f in */.nvchecker.toml; do dirname "$f"; done)
+packages=() cmd_packages=()
+for f in */.nvchecker.toml; do
+  pkg=${f%/*}
+  if grep -qxF "$pkg" <<<"$allowed"; then cmd_packages+=("$pkg"); else packages+=("$pkg"); fi
+done
+
 sudo -u builder env TERM=xterm SRCDEST=/tmp BUILDDIR=/tmp \
   pkgctl version upgrade --verbose "${packages[@]}"
+
+for pkg in "${cmd_packages[@]}"; do
+  current=$(sed -n 's/^pkgver=//p' "$pkg/PKGBUILD")
+  out=$(cd "$pkg" && sudo -u builder nvchecker --file .nvchecker.toml --logger json 2>&1) || true
+  latest=$(jq -rR --arg pkg "$pkg" 'fromjson? | select(.name == $pkg and .event == "updated") | .version' <<<"$out" 2>/dev/null) || true
+  if [[ ! $latest =~ ^[0-9A-Za-z._+]+$ ]]; then
+    printf '%s: no usable version from nvchecker:\n%s\n' "$pkg" "$out" >&2
+    exit 1
+  fi
+  if (( $(vercmp "$latest" "$current") <= 0 )); then
+    echo "$pkg: current version $current is latest"
+    continue
+  fi
+  sed -i -e "s/^pkgver=.*/pkgver=$latest/" -e 's/^pkgrel=.*/pkgrel=1/' "$pkg/PKGBUILD"
+  (cd "$pkg" && sudo -u builder env SRCDEST=/tmp BUILDDIR=/tmp updpkgsums)
+  echo "$pkg: upgraded from version $current to $latest"
+done
